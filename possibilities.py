@@ -1,4 +1,5 @@
 import itertools
+import sys
 
 
 def expand(t):
@@ -13,18 +14,18 @@ def expand_rec(t, i):
     return expand_rec(t[0:i] + (0,) + t[i:], i + 1)
 
 
-def display(t):
+def get_friendly(t):
     s = str(t)
     s = s.replace('0', ' ')
     s = s.replace('(', '')
     s = s.replace(')', '')
     s = s.replace(',', ' ')
-    print(s)
+    return s
 
 
-def restrict(t, rs):
+def one_of_each(t, sr):
     outer_valid = True
-    for r in rs:
+    for r in sr:
         inner_valid = False
         for z in r:
             if z in t:
@@ -34,13 +35,35 @@ def restrict(t, rs):
     return outer_valid
 
 
-target = 28
-digits = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-count = 6
-#restrictions = ((4, 5), (8, 7))
-restrictions = ()
+def all_of_any(t,hr):
+    for r in hr:
+        inner_valid = True
+        for z in r:
+            inner_valid = inner_valid and z in t
+        if inner_valid:
+            return True
+    return False
 
-combinations = list(itertools.combinations(digits, count))
-for x in combinations:
-    if sum(x) == target and restrict(x, restrictions):
-        display(expand(x))
+
+def calculate(target, count, soft_restrictions=(), hard_restrictions=()):
+    result = ""
+    digits = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    combinations = list(itertools.combinations(digits, count))
+    for x in combinations:
+        if sum(x) == target and one_of_each(x, soft_restrictions) and all_of_any(x, hard_restrictions):
+            result = result + get_friendly(expand(x)) + "\r\n"
+    return result[0:len(result)-2]
+
+
+target = 34
+count = 6
+if len(sys.argv) == 2:
+    target = int(sys.argv[1])
+    count = int(sys.argv[2])
+
+one = ((2, 3, 4, 5),)
+all = ()
+all = ((5, 9), (6, 8))
+
+x = calculate (target, count, one, all)
+print(x)
